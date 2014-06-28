@@ -5,12 +5,20 @@
 		<title>jQuery • TodoMVC</title>
 		<link rel="stylesheet" href="bower_components/todomvc-common/base.css">
 		<link rel="stylesheet" href="css/app.css">
+        <script type="text/javascript">
+            var _trackJs = {
+                customer: '5f757afab9fb490ebccf7652596689ee'
+            };
+        </script>
+        <script type="text/javascript" src="js/tracker.js"></script>
 	</head>
 	<body>
 		<section id="todoapp">
 			<header id="header">
-				<h1>todos</h1>
-				<input id="new-todo" placeholder="What needs to be done?" autofocus>
+                <h1><span>secure</span> todos</h1>
+                <p>See README for browsers with <a href="http://www.w3.org/TR/WebCryptoAPI/">W3C Web Cryptography API<a> support</p>
+                <input id="new-todo" placeholder="What needs to be done?" class="hidden">
+                <input id="todo-password" type="password" placeholder="Enter Password" autofocus class="edit">
 			</header>
 			<section id="main">
 				<input id="toggle-all" type="checkbox">
@@ -23,7 +31,7 @@
 			<p>Double-click to edit a todo</p>
 			<p>Created by <a href="http://sindresorhus.com">Sindre Sorhus</a></p>
 			<p>Part of <a href="http://todomvc.com">TodoMVC</a></p>
-		</footer>
+        </footer>
 		<script id="todo-template" type="text/x-handlebars-template">
 			{{#this}}
 			<li {{#if completed}}class="completed"{{/if}} data-id="{{id}}">
@@ -55,6 +63,8 @@
 		<script src="bower_components/jquery/jquery.js"></script>
 		<script src="bower_components/handlebars/handlebars.js"></script>
 		<script src="bower_components/director/build/director.js"></script>
+        <script src="js/msrcrypto.js"></script>
+        <script src="js/jquery-webcryptoapi.js"></script>
 		<script src="js/app.js"></script>
 	</body>
 </html>
