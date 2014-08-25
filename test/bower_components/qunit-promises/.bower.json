@@ -1,0 +1,36 @@
+{
+  "name": "qunit-promises",
+  "main": "qunit-promises.js",
+  "version": "0.1.3",
+  "description": "QUnit plugin that adds assertions to check promises quickly",
+  "keywords": [
+    "qunit",
+    "promises",
+    "test",
+    "assert"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/bahmutov/qunit-promises",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests",
+    "Gruntfile.js",
+    "package.json",
+    "complexity.json",
+    "jshint.json"
+  ],
+  "author": "Gleb Bahmutov <gleb.bahmutov@gmail.com>",
+  "_release": "0.1.3",
+  "_resolution": {
+    "type": "version",
+    "tag": "0.1.3",
+    "commit": "25fd9631c34ed9aeb7e4021b9984f8b8862e1d24"
+  },
+  "_source": "git://github.com/bahmutov/qunit-promises.git",
+  "_target": "~0.1.3",
+  "_originalSource": "qunit-promises",
+  "_direct": true
+}
