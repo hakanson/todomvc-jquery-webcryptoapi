@@ -22,6 +22,11 @@
 
 //    QUnit.module( 'Web Cryptography API' );
 
+    QUnit.test( 'window.crypto.subtle' , function () {
+        QUnit.ok(window.crypto, 'window.crypto');
+        QUnit.ok(window.crypto.subtle, 'window.crypto.subtle');
+    });
+
     QUnit.asyncTest( 'SHA-1', function () {
         // OpenSSL command line
         // echo -n "The quick brown fox jumps over the lazy dog" | openssl dgst -sha1
@@ -32,6 +37,9 @@
 
             QUnit.equal( hash, testVector.sha1Hash );
 
+            QUnit.start();
+        }, function (e) {
+            QUnit.fail(e);
             QUnit.start();
         });
     });
