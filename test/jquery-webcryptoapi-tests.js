@@ -22,29 +22,31 @@
 
 //    QUnit.module( 'Web Cryptography API' );
 
-    QUnit.test( 'window.crypto.subtle' , function () {
-        QUnit.ok(window.crypto, 'window.crypto');
-        QUnit.ok(window.crypto.subtle, 'window.crypto.subtle');
+    QUnit.test( 'window.crypto.subtle' , function ( assert ) {
+        assert.ok(window.crypto, 'window.crypto');
+        assert.ok(window.crypto.subtle, 'window.crypto.subtle');
     });
 
-    QUnit.asyncTest( 'SHA-1', function () {
+    QUnit.asyncTest( 'SHA-1', function ( assert ) {
         // OpenSSL command line
         // echo -n "The quick brown fox jumps over the lazy dog" | openssl dgst -sha1
         // (stdin)= 2fd4e1c67a2d28fced849ee1bb76e7391b93eb12
 
+        expect( 1 );
+
         crypto.subtle.digest( { name: 'sha-1' }, dataBuf ).then( function ( result ) {
             var hash = $.Uint8Util.toHexString( new Uint8Array( result ) );
 
-            QUnit.equal( hash, testVector.sha1Hash );
+            assert.equal( hash, testVector.sha1Hash );
 
             QUnit.start();
         }, function (e) {
-            QUnit.fail(e);
+            console.log(e);
             QUnit.start();
         });
     });
 
-    QUnit.asyncTest( 'HMAC using SHA-1', function () {
+    QUnit.asyncTest( 'HMAC using SHA-1', function ( assert ) {
         // OpenSSL command line
         // echo -n "The quick brown fox jumps over the lazy dog" | openssl dgst -sha1 -hmac "key"
         // (stdin)= de7c9b85b8b78aa6bc8a7a36f70a90701c9db4d9
