@@ -41,7 +41,7 @@
 
             QUnit.start();
         }, function (e) {
-            console.log(e);
+            assert.ok( false, e.message );
             QUnit.start();
         });
     });
@@ -60,10 +60,13 @@
 
                 QUnit.start();
             })
+        }, function (e) {
+            assert.ok( false, e.message );
+            QUnit.start();
         });
     });
 
-    QUnit.asyncTest( 'SHA-256', function () {
+    QUnit.asyncTest( 'SHA-256', function ( assert ) {
         // OpenSSL command line
         // $ echo -n "The quick brown fox jumps over the lazy dog" | openssl dgst -sha256
         // (stdin)= d7a8fbb307d7809469ca9abcb0082e4f8d5651e46d3cdb762d02d0bf37c9e592
@@ -74,10 +77,13 @@
             QUnit.equal( hash, testVector.sha256Hash );
 
             QUnit.start();
+        }, function (e) {
+            assert.ok( false, e.message );
+            QUnit.start();
         });
     });
 
-    QUnit.asyncTest( 'HMAC using SHA-256', function () {
+    QUnit.asyncTest( 'HMAC using SHA-256', function ( assert ) {
         // Wikipedia article
         // HMAC_SHA256("key", "The quick brown fox jumps over the lazy dog") = 0xf7bc83f430538424b13298e6aa6fb143ef4d59a14946175997479dbc2d1a3cd8
 
@@ -97,10 +103,13 @@
 
                 QUnit.start();
             })
+        }, function (e) {
+            assert.ok( false, e.message );
+            QUnit.start();
         });
     });
 
-    QUnit.asyncTest( 'AES-CBC (nested Promises)', function () {
+    QUnit.asyncTest( 'AES-CBC (nested Promises)', function ( assert ) {
         // $ echo -n "Message" | openssl enc -aes256 -K 0CD1D07EB67E19EF56EA0F3A9A8F8A7C957A2CB208327E0E536608FF83256C96 -iv 6C4C31BDAB7BAFD35B23691EC521E28D | xxd -p
         // 23e5ebe72d99cf302c99183c05cf050a
 
@@ -131,10 +140,13 @@
                     QUnit.start();
                 });
             });
+        }, function (e) {
+            assert.ok( false, e.message );
+            QUnit.start();
         });
     });
     
-    QUnit.asyncTest( 'AES-CBC (chained Promises)', function () {
+    QUnit.asyncTest( 'AES-CBC (chained Promises)', function ( assert ) {
         // $ echo -n "Message" | openssl enc -aes256 -K 0CD1D07EB67E19EF56EA0F3A9A8F8A7C957A2CB208327E0E536608FF83256C96 -iv 6C4C31BDAB7BAFD35B23691EC521E28D | xxd -p
         // 23e5ebe72d99cf302c99183c05cf050a
 
@@ -177,14 +189,20 @@
 
             QUnit.start();
         }
+
+        function onRejected  (e) {
+            assert.ok( false, e.message );
+
+            QUnit.start();
+        }
         
         importKey()
-            .then( encrypt )
+            .then( encrypt, onRejected )
             .then( decrypt )
             .then( compare );
     });
 
-    QUnit.asyncTest( 'PBKDF2', function () {
+    QUnit.asyncTest( 'PBKDF2', function ( assert ) {
 
         var testVector = {
             password : 'password',
@@ -211,6 +229,9 @@
 
                 QUnit.start();
             });
+        }, function (e) {
+            assert.ok( false, e.message );
+            QUnit.start();
         });
 
     });
