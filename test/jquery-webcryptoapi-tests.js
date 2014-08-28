@@ -32,8 +32,6 @@
         // echo -n "The quick brown fox jumps over the lazy dog" | openssl dgst -sha1
         // (stdin)= 2fd4e1c67a2d28fced849ee1bb76e7391b93eb12
 
-        expect( 1 );
-
         crypto.subtle.digest( { name: 'sha-1' }, dataBuf ).then( function ( result ) {
             var hash = $.Uint8Util.toHexString( new Uint8Array( result ) );
 
@@ -56,7 +54,7 @@
             crypto.subtle.sign( hmacSha1, keyResult, dataBuf ).then( function ( result ) {
                 var hash = $.Uint8Util.toHexString( new Uint8Array( result ) );
 
-                QUnit.equal( hash, 'de7c9b85b8b78aa6bc8a7a36f70a90701c9db4d9' );
+                assert.equal( hash, 'de7c9b85b8b78aa6bc8a7a36f70a90701c9db4d9' );
 
                 QUnit.start();
             })
@@ -74,7 +72,7 @@
         crypto.subtle.digest( { name: 'sha-256' }, dataBuf ).then( function ( result ) {
             var hash = $.Uint8Util.toHexString( new Uint8Array( result ) );
 
-            QUnit.equal( hash, testVector.sha256Hash );
+            assert.equal( hash, testVector.sha256Hash );
 
             QUnit.start();
         }, function (e) {
@@ -99,7 +97,7 @@
             crypto.subtle.sign( hmacSha256, keyResult, dataBuf ).then( function ( result ) {
                 var hash = $.Uint8Util.toHexString( new Uint8Array( result ) );
 
-                QUnit.equal( hash, 'f7bc83f430538424b13298e6aa6fb143ef4d59a14946175997479dbc2d1a3cd8' );
+                assert.equal( hash, 'f7bc83f430538424b13298e6aa6fb143ef4d59a14946175997479dbc2d1a3cd8' );
 
                 QUnit.start();
             })
@@ -130,12 +128,12 @@
                 var encryptBuf = new Uint8Array( encryptResult );
                 var ciphertext = $.Uint8Util.toHexString( encryptBuf );
 
-                QUnit.equal( ciphertext, testVector.ciphertext );
+                assert.equal( ciphertext, testVector.ciphertext );
 
                 crypto.subtle.decrypt( aesCbc, encryptionKey, encryptBuf ).then( function ( decryptResult ) {
                     var plaintext = $.Uint8Util.toString( new Uint8Array( decryptResult ) );
 
-                    QUnit.equal( plaintext, testVector.plaintext );
+                    assert.equal( plaintext, testVector.plaintext );
 
                     QUnit.start();
                 });
@@ -177,7 +175,7 @@
             var encryptBuf = new Uint8Array( encryptResult );
             var ciphertext = $.Uint8Util.toHexString( encryptBuf );
 
-            QUnit.equal( ciphertext, testVector.ciphertext );
+            assert.equal( ciphertext, testVector.ciphertext );
 
             return crypto.subtle.decrypt( aesCbc, encryptionKey, encryptBuf );
         }
@@ -185,7 +183,7 @@
         function compare ( decryptResult ) {
             var plaintext = $.Uint8Util.toString( new Uint8Array( decryptResult ) );
 
-            QUnit.equal( plaintext, testVector.plaintext );
+            assert.equal( plaintext, testVector.plaintext );
 
             QUnit.start();
         }
@@ -225,7 +223,7 @@
                 var deriveBuf = new Uint8Array( deriveResult );
                 var key = $.Uint8Util.toHexString( deriveBuf );
 
-                QUnit.equal( key, testVector.key );
+                assert.equal( key, testVector.key );
 
                 QUnit.start();
             });
