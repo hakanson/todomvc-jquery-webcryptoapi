@@ -59,7 +59,7 @@ jQuery(function ($) {
 								});
 							}
 
-						}, function (e) {
+						}, function (e) { // TODO will these bubble up???
 							window.trackJs.track(e);
 							defer.resolve(false);
 						});
@@ -283,6 +283,7 @@ jQuery(function ($) {
 			}
 
 			this.validatePassword(val, confirmVal).then($.proxy(function (isValid) {
+                // TODO don't use boolean, use resolve/reject functions
 				if (isValid) {
 					$input.val('');
 				} else {
