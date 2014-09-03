@@ -25,7 +25,8 @@ jQuery(function ($) {
 			// convert password to key
 			// no PBKDF2 in Chrome or IE yet, so use a salted hash
 			var hmacSha256 = {name: 'hmac', hash: {name: 'sha-256'}};
-			var buf = $.Uint8Util.fromString(password);
+            var encoder = new TextEncoder();
+            var buf = encoder.encode(password);
 
 			this.authenticated = true;
 
@@ -77,7 +78,8 @@ jQuery(function ($) {
 		setItem: function (value) {
 			var defer = $.Deferred(), that = this;
 
-			var todosBuf = $.Uint8Util.fromString(JSON.stringify(value));
+            var encoder = new TextEncoder();
+            var todosBuf = encoder.encode(JSON.stringify(value));
 			var aesCbc = {name: 'AES-CBC', iv: this.iv };
 
 			$.WebCryptoAPI.subtle.encrypt(aesCbc, this.encryptionKey, todosBuf).then(function (result) {
@@ -127,7 +129,8 @@ jQuery(function ($) {
 				var todosBuf = $.Uint8Util.fromHexString(data.ciphertext);
 				var aesCbc = {name: 'AES-CBC', iv: this.iv };
 				$.WebCryptoAPI.subtle.decrypt(aesCbc, this.encryptionKey, todosBuf).then(function (result) {
-					var plaintext = $.Uint8Util.toString(new Uint8Array(result));
+                    var decoder = new TextDecoder();
+                    var plaintext = decoder.decode(new Uint8Array(result));
 
 					try {
 						data.todos = JSON.parse(plaintext);

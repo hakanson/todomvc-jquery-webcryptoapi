@@ -1,28 +1,9 @@
-(function($, window) {
+(function($) {
     'use strict';
 
-    // TODO rename toString as toDOMString ?
     var util = {
         // functions somewhat derived from Chromium Nightly
         // http://src.chromium.org/viewvc/blink/trunk/LayoutTests/crypto/resources/common.js
-        toString: function (buf) {
-            var i, chars = [];
-            for (i = 0; i < buf.length; i++) {
-                chars.push(String.fromCharCode(buf[i]));
-            }
-
-            return chars.join('');
-        },
-
-        fromString: function (s) {
-            var i, plaintextBuf = new Uint8Array(s.length);
-            for (i = 0; i < s.length; i++) {
-                plaintextBuf[i] = s.charCodeAt(i);
-            }
-
-            return plaintextBuf;
-        },
-
         toHexString: function (buf) {
             var i, hexChars = [];
             for (i = 0; i < buf.length; i++) {
@@ -49,18 +30,7 @@
 
             return arrayBuffer;
         }
-
-        // TODO look at https://developer.mozilla.org/en-US/Add-ons/Code_snippets/StringView
-        /*
-        toBase64String: function (buf) {
-            // TODO
-        },
-
-        fromBase64String: function (s) {
-            // TODO
-        }
-        */
     };
 
     $.Uint8Util = util;
-})(jQuery, window);
+})(jQuery);

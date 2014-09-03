@@ -17,8 +17,11 @@
     var hmacSha1 = { name: 'hmac', hash: { name: 'sha-1' } };
     var hmacSha256 = { name: 'hmac', hash: { name: 'sha-256' } };
 
-    var dataBuf = $.Uint8Util.fromString( testVector.data );
-    var keyBuf = $.Uint8Util.fromString( testVector.key );
+    var encoder = new TextEncoder();
+    var decoder = new TextDecoder();
+
+    var dataBuf = encoder.encode( testVector.data );
+    var keyBuf = encoder.encode( testVector.key );
 
 //    QUnit.module( 'Web Cryptography API' );
 
@@ -118,7 +121,7 @@
             ciphertext: '23e5ebe72d99cf302c99183c05cf050a'
         };
 
-        var buf = $.Uint8Util.fromString( testVector.plaintext );
+        var buf = encoder.encode( testVector.plaintext );
         var keyBuf = $.Uint8Util.fromHexString( testVector.key );
         var ivBuf = $.Uint8Util.fromHexString( testVector.iv );
 
@@ -131,7 +134,7 @@
                 assert.equal( ciphertext, testVector.ciphertext );
 
                 crypto.subtle.decrypt( aesCbc, encryptionKey, encryptBuf ).then( function ( decryptResult ) {
-                    var plaintext = $.Uint8Util.toString( new Uint8Array( decryptResult ) );
+                    var plaintext = decoder.decode( new Uint8Array( decryptResult ) );
 
                     assert.equal( plaintext, testVector.plaintext );
 
@@ -155,7 +158,7 @@
             ciphertext: '23e5ebe72d99cf302c99183c05cf050a'
         };
 
-        var buf = $.Uint8Util.fromString( testVector.plaintext );
+        var buf = encoder.encode( testVector.plaintext );
         var keyBuf = $.Uint8Util.fromHexString( testVector.key );
         var ivBuf = $.Uint8Util.fromHexString( testVector.iv );
 
@@ -181,7 +184,7 @@
         }
 
         function compare ( decryptResult ) {
-            var plaintext = $.Uint8Util.toString( new Uint8Array( decryptResult ) );
+            var plaintext = decoder.decode( new Uint8Array( decryptResult ) );
 
             assert.equal( plaintext, testVector.plaintext );
 
@@ -216,7 +219,8 @@
             iterations: testVector.iterations
         };
 
-        var passwordBuf = $.Uint8Util.fromString( testVector.password );
+        var passwordBuf = encoder.encode( testVector.password );
+        // var passwordBuf = $.Uint8Util.fromString( testVector.password );
         crypto.subtle.importKey('raw', passwordBuf, 'PBKDF2', false, ['deriveKey']).then(function ( keyResult ) {
 
             crypto.subtle.deriveBits( alg, keyResult, 256 ).then(function ( deriveResult ) {
