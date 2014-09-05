@@ -20,13 +20,13 @@ jQuery(function ($) {
 		encryptionKey: null,
 		hasTodos: false,
 		authenticate: function (password) {
-			var defer = $.Deferred(), that = this;
+			var that = this;
 
 			// convert password to key
 			// no PBKDF2 in Chrome or IE yet, so use a salted hash
 			var hmacSha256 = {name: 'hmac', hash: {name: 'sha-256'}};
-            var encoder = new TextEncoder();
-            var buf = encoder.encode(password);
+			var encoder = new TextEncoder();
+			var buf = encoder.encode(password);
 
 			this.authenticated = true;
 
@@ -35,118 +35,94 @@ jQuery(function ($) {
 				$.WebCryptoAPI.getRandomValues(this.salt);
 				this.hexSalt = $.Uint8Util.toHexString(this.salt);
 
-				this.iv =  new Uint8Array(16);
+				this.iv = new Uint8Array(16);
 				$.WebCryptoAPI.getRandomValues(this.iv);
 				this.hexIV = $.Uint8Util.toHexString(this.iv);
 
 				this.initialized = true;
 			}
 
-			$.WebCryptoAPI.subtle.importKey('raw', this.salt, hmacSha256, true, ['sign', 'verify']).then(function (result) {
-				$.WebCryptoAPI.subtle.sign(hmacSha256, result, buf).then(function (result) {
-						var keyBuf = new Uint8Array(result);
+			return $.WebCryptoAPI.subtle.importKey('raw', that.salt, hmacSha256, true, ['sign', 'verify']).then(function (result) {
+				return $.WebCryptoAPI.subtle.sign(hmacSha256, result, buf).then(function (result) {
+					var keyBuf = new Uint8Array(result);
 
-						// importKey for future AES encryption
-						$.WebCryptoAPI.subtle.importKey('raw', keyBuf, {name: 'AES-CBC'}, true, ['encrypt', 'decrypt']).then(function (result) {
-							that.encryptionKey = result;
+					// importKey for later AES encryption
+					return $.WebCryptoAPI.subtle.importKey('raw', keyBuf, {name: 'AES-CBC'}, true, ['encrypt', 'decrypt']).then(function (result) {
+						that.encryptionKey = result;
 
-							if (that.hasTodos) {
-								defer.resolve(true);
-							} else {
-								that.setItem([]).then(function () {
-									defer.resolve(true);
-								}, function () {
-									defer.resolve(false);
-								});
-							}
-
-						}, function (e) { // TODO will these bubble up???
-							window.trackJs.track(e);
-							defer.resolve(false);
-						});
-					}, function (e) {
-						window.trackJs.track(e);
-						defer.resolve(false);
+						if (!that.hasTodos) {
+							return that.setItem([]);
+						}
 					});
-			}, function (e) {
-				window.trackJs.track(e);
-				defer.resolve(false);
+				});
 			});
-
-			return defer.promise();
 		},
 		setItem: function (value) {
-			var defer = $.Deferred(), that = this;
-
-            var encoder = new TextEncoder();
-            var todosBuf = encoder.encode(JSON.stringify(value));
+			var encoder = new TextEncoder();
+			var todosBuf = encoder.encode(JSON.stringify(value));
 			var aesCbc = {name: 'AES-CBC', iv: this.iv };
+			var data = {
+				salt: this.hexSalt,
+				iv: this.hexIV,
+				ciphertext: null
+			};
 
-			$.WebCryptoAPI.subtle.encrypt(aesCbc, this.encryptionKey, todosBuf).then(function (result) {
-                var data = {
-                    salt: that.hexSalt,
-                    iv: that.hexIV,
-                    ciphertext: $.Uint8Util.toHexString(new Uint8Array(result))
-                };
+			return $.WebCryptoAPI.subtle.encrypt(aesCbc, this.encryptionKey, todosBuf).then(function (result) {
+				data.ciphertext = $.Uint8Util.toHexString(new Uint8Array(result));
 				localStorage.setItem(NAMESPACE, JSON.stringify(data));
-				defer.resolve();
-			}, function (e) {
-				window.trackJs.track(e);
-				defer.reject();
 			});
-
-			return defer.promise();
 		},
 		getItem: function () {
-			var defer = $.Deferred();
+			var that = this;
 			var store = localStorage.getItem(NAMESPACE);
 			var data = (store && JSON.parse(store));
 
-			if (!data) {
-				defer.resolve(null);
-				return defer.promise();
-			}
+			var promise = new Promise(function(resolve, reject) {
 
-			if (!this.initialized) {
-				this.hexSalt = data.salt;
-				this.salt = $.Uint8Util.fromHexString(this.hexSalt);
-				this.hexIV = data.iv;
-				this.iv = $.Uint8Util.fromHexString(this.hexIV);
-				this.hasTodos = !!data.ciphertext;
+				if (!data) {
+					reject(new Error('no data'))
+				} else {
 
-				this.initialized = true;
-			}
+					if (!that.initialized) {
+						that.hexSalt = data.salt;
+						that.salt = $.Uint8Util.fromHexString(that.hexSalt);
+						that.hexIV = data.iv;
+						that.iv = $.Uint8Util.fromHexString(that.hexIV);
+						that.hasTodos = !!data.ciphertext;
 
-			if (!this.authenticated) {
-				defer.resolve(null);
-				return defer.promise();
-			}
-
-			if (!data.ciphertext) {
-				defer.resolve([]);
-
-			} else {
-				var todosBuf = $.Uint8Util.fromHexString(data.ciphertext);
-				var aesCbc = {name: 'AES-CBC', iv: this.iv };
-				$.WebCryptoAPI.subtle.decrypt(aesCbc, this.encryptionKey, todosBuf).then(function (result) {
-                    var decoder = new TextDecoder();
-                    var plaintext = decoder.decode(new Uint8Array(result));
-
-					try {
-						data.todos = JSON.parse(plaintext);
-						defer.resolve(data.todos);
-					} catch (e) {
-						window.trackJs.track(e);
-						defer.resolve(null);
+						that.initialized = true;
 					}
 
-				}, function (e) {
-					window.trackJs.track(e);
-					defer.resolve(null);
-				});
-			}
+					if (!that.authenticated) {
+						reject(new Error('not authenticated'))
 
-			return defer.promise();
+					} else if (!data.ciphertext) {
+						resolve([]);
+
+					} else {
+						var todosBuf = $.Uint8Util.fromHexString(data.ciphertext);
+						var aesCbc = {name: 'AES-CBC', iv: that.iv };
+						$.WebCryptoAPI.subtle.decrypt(aesCbc, that.encryptionKey, todosBuf).then(function (result) {
+							var decoder = new TextDecoder();
+							var plaintext = decoder.decode(new Uint8Array(result));
+
+							try {
+								data.todos = JSON.parse(plaintext);
+								resolve(data.todos);
+							} catch (err) {
+								window.trackJs.track(err);
+								reject(err);
+							}
+
+						}, function (err) {
+							window.trackJs.track(err);
+							reject(err);
+						});
+					}
+				}
+			});
+
+			return promise;
 		}
 	};
 
@@ -170,19 +146,11 @@ jQuery(function ($) {
 			return count === 1 ? word : word + 's';
 		},
 		store: function (data) {
-			var defer = $.Deferred();
-
-			if (arguments.length > 0) {
-				cryptoStorage.setItem(data).then(function () {
-					defer.resolve();
-				});
+			if (data) {
+				return cryptoStorage.setItem(data);
 			} else {
-				cryptoStorage.getItem().then(function (data) {
-					defer.resolve(data);
-				});
+				return cryptoStorage.getItem();
 			}
-
-			return defer.promise();
 		}
 	};
 
@@ -265,6 +233,7 @@ jQuery(function ($) {
 			this.$footer.toggle(todoCount > 0).html(template);
 		},
 		processPassword: function (e) {
+			var that = this;
 			var $input = $(e.target);
 			var val = $input.val().trim();
 
@@ -285,41 +254,34 @@ jQuery(function ($) {
 				}
 			}
 
-			this.validatePassword(val, confirmVal).then($.proxy(function (isValid) {
-                // TODO don't use boolean, use resolve/reject functions
-				if (isValid) {
+			this.validatePassword(val, confirmVal).then(function () {
+				$input.val('');
+			}).catch(function () {
+				if (confirmVal) {
 					$input.val('');
 				} else {
-					if (confirmVal) {
-						$input.val('');
-					} else {
-						$input.select();
-					}
-
-					$input.addClass('invalid');
+					$input.select();
 				}
-				this.render();
-			}, this));
+				$input.addClass('invalid');
+			}).then(function () {
+				that.render();
+			});
 		},
 		validatePassword: function (password, confirmPassword) {
-			var result = $.Deferred(), that = this;
+			var that = this;
 
 			if (confirmPassword && confirmPassword != password) {
-				result.resolve(false);
-			} else {
-				cryptoStorage.authenticate(password).then(function (isAuthenticated) {
-					if (isAuthenticated) {
-						util.store().then(function (data) {
-							that.todos = data;
-							result.resolve(!!data);
-						});
-					} else {
-						result.resolve(false);
-					}
+				return new Promise(function(resolve, reject) {
+					reject(new Error('passwords do not match'));
 				});
 			}
+			return cryptoStorage.authenticate(password).then(function () {
+				return util.store();
 
-			return result.promise();
+			}).then(function (result) {
+				that.todos = result;
+
+			})
 		},
 		toggleAll: function (e) {
 			var isChecked = $(e.target).prop('checked');
