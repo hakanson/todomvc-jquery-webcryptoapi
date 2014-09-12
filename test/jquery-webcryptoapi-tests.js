@@ -89,10 +89,10 @@
 
 		assert.promise( crypto.subtle.importKey( 'raw', keyBuf, hmacSha1, true, ['sign', 'verify'] ).then( function ( keyResult ) {
 
-			return crypto.subtle.sign( hmacSha1, keyResult, dataBuf ).then( function ( result ) {
-				var hash = $.Uint8Util.toHexString( new Uint8Array( result ) );
+			return crypto.subtle.sign( hmacSha1, keyResult, dataBuf ).then( function ( signResult ) {
+				var hash = $.Uint8Util.toHexString( new Uint8Array( signResult ) );
 
-				assert.equal( hash, 'de7c9b85b8b78aa6bc8a7a36f70a90701c9db4d9' );
+				assert.equal( hash, testVector.sha1HMAC );
 			})
 		}));
 	});
@@ -122,10 +122,10 @@
 
 		assert.promise( crypto.subtle.importKey( 'raw', keyBuf, hmacSha256, true, ['sign', 'verify'] ).then( function ( keyResult ) {
 
-			return crypto.subtle.sign( hmacSha256, keyResult, dataBuf ).then( function ( result ) {
-				var hash = $.Uint8Util.toHexString( new Uint8Array( result ) );
+			return crypto.subtle.sign( hmacSha256, keyResult, dataBuf ).then( function ( signResult ) {
+				var hash = $.Uint8Util.toHexString( new Uint8Array( signResult ) );
 
-				assert.equal( hash, 'f7bc83f430538424b13298e6aa6fb143ef4d59a14946175997479dbc2d1a3cd8' );
+				assert.equal( hash, testVector.sha256HMAC );
 			});
 		}));
 	});
@@ -245,17 +245,17 @@
 		assert.promise( crypto.subtle.digest( { name: 'kjh-256' }, dataBuf ).then( function ( result ) {
 			var hash = $.Uint8Util.toHexString( new Uint8Array( result ) );
 
-			assert.equal( hash, testVector.sha1Hash );
+			assert.equal( hash, 'kjh' );
 		}));
 	});
 
 	QUnit.test( 'HMAC using KJH-256', function ( assert ) {
 		var hmacKjh256 = { name: 'hmac', hash: { name: 'kjh-256' } };
 
-		assert.promise( crypto.subtle.importKey( 'raw', keyBuf, hmacSha1, true, ['sign', 'verify'] ).then( function ( keyResult ) {
+		assert.promise( crypto.subtle.importKey( 'raw', keyBuf, hmacKjh256, true, ['sign', 'verify'] ).then( function ( keyResult ) {
 
-			return crypto.subtle.sign( hmacKjh256, keyResult, dataBuf ).then( function ( result ) {
-				var hash = $.Uint8Util.toHexString( new Uint8Array( result ) );
+			return crypto.subtle.sign( hmacKjh256, keyResult, dataBuf ).then( function ( signResult ) {
+				var hash = $.Uint8Util.toHexString( new Uint8Array( signResult ) );
 
 				assert.equal( hash, 'kjh' );
 			})
